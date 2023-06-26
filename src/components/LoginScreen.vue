@@ -1,4 +1,5 @@
 <template>
+  <div class="main">
     <div class="login-screen">
         <img alt="Sausages Image" src="../assets/sausageimage.png" />
         <div class="image-container">
@@ -16,49 +17,79 @@
                 </defs>
             </svg>
      </div>
-        <form @submit.prevent="login" id="logging-form">  
+        <form @submit.prevent="submitForm" id="logging-form">  
             <div class="form-inputs">     
                 <div class="input-wrapper" >
-                    <label for="username">Enter your email address:</label>
-                    <input class="text-field"  type="text" id="username" v-model="username" placeholder="Email address" />
+                    <label for="email">Enter your email address:</label>
+                    <input class="text-field"  type="text" id="email" v-model="form.email" placeholder="Email address" />
+                    <span v-if="errors && errors.email" class="error-message">{{ errors.email }}</span>
+
                 </div>
                 <div class="input-wrapper">
                     <label for="password">Enter your Password:</label>
-                    <input class="text-field" type="password" id="password" v-model="password" placeholder="Password" />
+                    <input class="text-field" type="password" id="password" v-model="form.password" placeholder="Password" />
+                    <span v-if="errors && errors.password" class="error-message">{{ errors.password }}</span>
+
                 </div>
             </div> 
             <button class="submit-button" type="submit" @click="signIn">Login</button>
         </form>
         <div class="account">
-            <p>Don’t have an account? Register</p>
+            <p>Don't have an account? Register</p>
             <p class="forgot-password">Forgot Password</p>
 
         </div>
     </div>
+  </div>
   </template>
   
   
   <script>
+  import { ref, reactive, getCurrentInstance   } from 'vue';
+
   export default {
-    data() {
-      return {
-        username: '',
+    setup() {
+      const vm = getCurrentInstance();
+     const form = ref({
+        email: '',
         password: '',
-      };
-    },
-    methods: {
-      signIn() {
-        // Perform login logic
-        // Access data properties using `this`
-        console.log('Username:', this.username);
-        console.log('Password:', this.password);
-        this.redirectToDashboard()
-      },
-      redirectToDashboard() {
-        this.$router.push('/dashboard');
-      },
-    },
-  };
+      });
+      const isFormSubmitted = ref(false);
+      const errors = reactive({}); // Define errors as reactive object
+      const submitForm = () => {
+        isFormSubmitted.value = true;
+        if (isFormValid()) {
+          console.log(form.value);
+          vm.appContext.config.globalProperties.$router.push('/dashboard'); // Redirect to dashboard
+        }
+        else console.log("form.value is not valid");
+        };
+      const isFormValid = () => {
+        let isValid = true;
+
+        if (form.value.email === '') {
+          errors.email = 'email is required';
+          isValid = false;
+        }else if (!/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(form.value.email)) {
+         errors.email = 'Email must be a valid email address';
+        isValid = false;
+        }
+        
+        if (form.value.password === '') {
+          errors.password = 'Password is required';
+          isValid = false;
+        }
+        return isValid;
+      }
+      return {
+        form,
+        isFormSubmitted,
+        submitForm,
+        errors,
+
+      }
+    }
+  }
   </script>
   
   
